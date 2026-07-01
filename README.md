@@ -1,9 +1,17 @@
 # Claude Code Handoff Skills
 
-Two [Claude Code](https://claude.com/claude-code) skills that let you carry work across a `/clear` without losing context. When a session's context window gets bloated, capture everything into a self-contained handoff file, clear, and resume in a fresh session exactly where you left off.
+**Don't lose your work when the context window fills up.** Two [Claude Code](https://claude.com/claude-code) skills that let you `/clear` and keep going — capture a session to a handoff file, then resume it in a fresh session exactly where you left off.
 
 - **`/handoff-prepare`** — captures the current session (goal, changes, decisions, caveats, next steps) into a self-contained file at `.claude/tmp/handoff/`.
 - **`/handoff-continue`** — loads a handoff file in a fresh session and resumes from its "Next steps".
+
+```
+/handoff-prepare        # context getting big? dump the state to a file
+/clear                  # wipe the bloated context
+/handoff-continue       # fresh session picks up right where you left off
+```
+
+👉 **[See what a handoff file looks like →](examples/sample-handoff.md)**
 
 Capture and resume are **separate, explicit commands** — no fragile auto-resume hooks. You stay in control of when context is cleared (only `/clear` does that) and when work resumes.
 
