@@ -1,0 +1,11 @@
+{
+  "name": "handoff-skills",
+  "version": "1.0.0",
+  "description": "Session handoff skills for Claude Code, Codex CLI, Cursor, Gemini CLI, and Grok Build",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/generate.mjs",
+    "test": "node scripts/generate.mjs && node scripts/check.mjs"
+  }
+}
