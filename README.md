@@ -1,42 +1,72 @@
-# Claude Code Handoff Skills
+# Handoff Skills
 
-**Don't lose your work when the context window fills up.** Two [Claude Code](https://claude.com/claude-code) skills that let you `/clear` and keep going — capture a session to a handoff file, then resume it in a fresh session exactly where you left off.
+**Don't lose your work when the context window fills up.** A pair of skills that let you start a fresh session and keep going — capture a session to a handoff file, then resume it in a new session exactly where you left off.
 
-- **`/handoff-prepare`** — captures the current session (goal, changes, decisions, caveats, next steps) into a self-contained file at `.claude/tmp/handoff/`.
-- **`/handoff-continue`** — loads a handoff file in a fresh session and resumes from its "Next steps".
+Works across coding agents: **Claude Code, Codex CLI, Cursor, Gemini CLI, and Grok Build.**
+
+- **`handoff-prepare`** — captures the current session (goal, changes, decisions, caveats, next steps) into a self-contained file under a project-local handoff dir.
+- **`handoff-continue`** — loads a handoff file in a fresh session and resumes from its "Next steps".
 
 ```
 /handoff-prepare        # context getting big? dump the state to a file
-/clear                  # wipe the bloated context
-/handoff-continue       # fresh session picks up right where you left off
+                        # start a fresh session (however your agent does it)
+/handoff-continue       # the fresh session picks up right where you left off
 ```
 
 👉 **[See what a handoff file looks like →](examples/sample-handoff.md)**
 
-Capture and resume are **separate, explicit commands** — no fragile auto-resume hooks. You stay in control of when context is cleared (only `/clear` does that) and when work resumes.
+Capture and resume are **separate, explicit commands** — no fragile auto-resume hooks. You stay in control of when the session resets and when work resumes.
 
 ## Why
 
-Long sessions degrade: context fills with stale detail, and compaction drops the *why* behind decisions. The usual fix — `/clear` — throws away everything. These skills give you a deliberate seam: dump the state you actually need into a file that survives the clear, then rehydrate a clean session from it. The handoff is written for an agent with **zero** memory of the prior session, so it captures dead ends and gotchas, not just a diff.
+Long sessions degrade: context fills with stale detail, and compaction drops the *why* behind decisions. Starting fresh throws away everything. These skills give you a deliberate seam: dump the state you actually need into a file that survives the reset, then rehydrate a clean session from it. The handoff is written for an agent with **zero** memory of the prior session, so it captures dead ends and gotchas, not just a diff.
+
+## How it's built
+
+One canonical source per skill lives in [`src/`](src/). A zero-dependency Node generator ([`scripts/generate.mjs`](scripts/generate.mjs)) emits each agent's native format into [`dist/`](dist/). Editing a skill means editing one file in `src/` and rebuilding — every agent stays in sync.
+
+```sh
+nvm use          # Node 24 (see .nvmrc)
+npm test         # regenerate dist/ and verify every agent output
+```
 
 ## Install
 
-Skills live in `~/.claude/skills/`. Copy (or symlink) both skill directories there:
+`dist/` is committed, so you can install without building. Pick your agent:
 
+### Claude Code
 ```sh
-git clone https://github.com/orzilca/claude-handoff-skills.git
-cp -R claude-handoff-skills/handoff-prepare  ~/.claude/skills/
-cp -R claude-handoff-skills/handoff-continue ~/.claude/skills/
+cp -R dist/claude/handoff-prepare  ~/.claude/skills/
+cp -R dist/claude/handoff-continue ~/.claude/skills/
 ```
 
-To stay updated via `git pull`, symlink instead of copy:
-
+### Codex CLI
 ```sh
-ln -s "$PWD/claude-handoff-skills/handoff-prepare"  ~/.claude/skills/handoff-prepare
-ln -s "$PWD/claude-handoff-skills/handoff-continue" ~/.claude/skills/handoff-continue
+cp dist/codex/handoff-prepare.md  ~/.codex/prompts/
+cp dist/codex/handoff-continue.md ~/.codex/prompts/
 ```
 
-Restart Claude Code (or start a new session) so it picks up the new skills.
+### Cursor
+```sh
+# global (all projects)
+mkdir -p ~/.cursor/commands && cp dist/cursor/*.md ~/.cursor/commands/
+# or per-project
+mkdir -p .cursor/commands && cp dist/cursor/*.md .cursor/commands/
+```
+
+### Gemini CLI
+```sh
+mkdir -p ~/.gemini/commands && cp dist/gemini/*.toml ~/.gemini/commands/
+```
+
+### Grok Build
+Grok Build reads Claude-format skills natively, so install the Claude package — it discovers skills in `~/.claude/skills/`:
+```sh
+cp -R dist/claude/handoff-prepare  ~/.claude/skills/
+cp -R dist/claude/handoff-continue ~/.claude/skills/
+```
+
+Restart your agent (or start a new session) so it picks up the new commands.
 
 ## Usage
 
@@ -44,22 +74,15 @@ Restart Claude Code (or start a new session) so it picks up the new skills.
 # When context is getting large:
 /handoff-prepare
 
-# Then:
-/clear
+# Then start a fresh session (Claude: /clear · Gemini: /clear · Codex: /new · Cursor: new chat).
 
 # In the fresh session:
 /handoff-continue                 # loads the newest handoff automatically
 /handoff-continue my-topic        # or match a handoff by name substring
-/handoff-continue .claude/tmp/handoff/20260701-105610-my-topic.md   # or by explicit path
+/handoff-continue path/to/handoff.md   # or by explicit path
 ```
 
-Handoff files are written to the **working directory's** `.claude/tmp/handoff/`, so they're scoped to the project and survive `/clear`. The skills themselves live in `~/.claude/skills/` (global).
-
-## How it works
-
-`/handoff-prepare` reads back through the conversation (not just disk) to reconstruct intent, then writes a structured markdown file: goal, done/in-progress state, changes-with-why, key decisions, caveats, git state, open questions, and — most importantly — concrete next steps.
-
-`/handoff-continue` resolves which file to load (explicit path, name substring, or newest-by-mtime), reads it in full, honors its caveats, and continues from "Next steps".
+Each agent writes handoffs under its own project-local dir (`.claude/tmp/handoff/`, `.codex/handoff/`, `.cursor/handoff/`, `.gemini/handoff/`), so they're scoped to the project and survive a session reset.
 
 ## License
 
