@@ -1,5 +1,5 @@
 {
-  "name": "handoff-skills",
+  "name": "agent-handoff-skills",
   "version": "1.0.0",
   "description": "Session handoff skills for Claude Code, Codex CLI, Cursor, Gemini CLI, and Grok Build",
   "license": "MIT",
