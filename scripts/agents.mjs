@@ -6,9 +6,6 @@ const common = (dir, args, fresh) => ({
   CONTINUE_CMD: '/handoff-continue',
 });
 
-const title = (name) =>
-  name.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
-
 export const AGENTS = [
   {
     id: 'claude',
@@ -21,13 +18,13 @@ export const AGENTS = [
     id: 'codex',
     tokens: common('.codex/handoff/', '$ARGUMENTS', '/new'),
     outPath: (name) => `${name}.md`,
-    wrap: ({ name, body }) => `# ${title(name)}\n\n${body}\n`,
+    wrap: ({ body }) => `${body}\n`,
   },
   {
     id: 'cursor',
     tokens: common('.cursor/handoff/', 'the name or path you passed', 'a new chat'),
     outPath: (name) => `${name}.md`,
-    wrap: ({ name, body }) => `# ${title(name)}\n\n${body}\n`,
+    wrap: ({ body }) => `${body}\n`,
   },
   {
     id: 'gemini',
