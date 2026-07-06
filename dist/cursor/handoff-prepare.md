@@ -1,23 +1,18 @@
----
-name: handoff-prepare
-description: Use when the context window is getting large and the user wants to continue in a fresh session. Captures everything done this session (changes, decisions, caveats, next steps) into a self-contained handoff file at .claude/tmp/handoff/, then tells the user to /clear and run /handoff-continue. Triggers on "handoff", "prepare handoff", "continue in a new session", "context is too big", "compact and continue".
----
-
 # Handoff Prepare
 
 Capture the current session into a self-contained handoff document so a **fresh** session can pick up exactly where this one left off.
 
-This skill only **writes** the handoff. Resuming is a separate step: the user runs `/clear`, then `/handoff-continue`. Do not claim the context was cleared — you cannot clear it; only the user can, with `/clear`.
+This skill only **writes** the handoff. Resuming is a separate step: the user starts a fresh session (a new chat), then runs /handoff-continue. Do not claim the context was cleared — you cannot clear it; only the user can.
 
 ## Workflow
 
 1. **Gather** from the *conversation*, not just the disk. Read back through this session for: the goal, what was done and why, what changed, what broke, what's still open. The conversation holds context the files don't.
 2. **Capture git state** *only if this is a git repo.* Run `git status --short` and `git log --oneline -10` (single commands, no pipes). If not a git repo, skip and note it.
-3. **Write the file** to `.claude/tmp/handoff/{timestamp}-{slug}.md` using the template below.
+3. **Write the file** to `.cursor/handoff/{timestamp}-{slug}.md` using the template below.
    - Timestamp: run `date +%Y%m%d-%H%M%S`.
    - Slug: 2-4 kebab-case words naming the topic (e.g. `parkalot-cron`). The slug is what `/handoff-continue <name>` matches against, so make it distinctive.
-   - Ensure the dir exists: `mkdir -p .claude/tmp/handoff`.
-   - Use project-local `.claude/tmp/handoff/`, not the system temp dir, so the path survives `/clear`.
+   - Ensure the dir exists: `mkdir -p .cursor/handoff/`.
+   - Use the project-local handoff dir, not the system temp dir, so the path survives starting a fresh session.
 4. **Print the closing block** (see below) as the last thing in your reply.
 
 ## What goes in the handoff
@@ -77,20 +72,18 @@ You are continuing prior work with no memory of it. Read this whole file, then s
 After writing the file, end your reply with exactly this, filled in:
 
 ```
-Handoff written: .claude/tmp/handoff/{timestamp}-{slug}.md
+Handoff written: .cursor/handoff/{timestamp}-{slug}.md
 
 To continue in a fresh session:
-  1. Run /clear
+  1. Start a fresh session (a new chat)
   2. Run /handoff-continue   (loads the newest handoff automatically)
 
 Or target this one explicitly: /handoff-continue {slug}
 ```
 
-Works in any Claude Code surface (terminal, IntelliJ, VS Code, web).
-
 ## Common mistakes
-- Writing to the system temp dir → path is awkward to reference after `/clear`. Use project `.claude/tmp/handoff/`.
+- Writing to the system temp dir → path is awkward to reference after starting fresh. Use the project-local handoff dir.
 - Summarizing only file changes → the next session redoes abandoned approaches. Capture the *why* and the dead ends.
-- Claiming context is cleared → you can't; the user clears it with `/clear`.
+- Claiming context is cleared → you can't; only the user can, by starting a fresh session.
 - Burying next steps → put them last and make them concrete.
 - Vague slug → `/handoff-continue <name>` can't find it. Name the topic distinctively.
