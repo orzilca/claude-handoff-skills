@@ -1,0 +1,13 @@
+{
+  "name": "agent-handoff-skills",
+  "owner": {
+    "name": "Or Zilca"
+  },
+  "plugins": [
+    {
+      "name": "handoff",
+      "source": "./dist/claude-plugin",
+      "description": "Capture a session to a handoff file and resume it in a fresh session; auto-offers a handoff when context gets large."
+    }
+  ]
+}

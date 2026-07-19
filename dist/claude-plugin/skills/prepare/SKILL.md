@@ -1,5 +1,5 @@
 ---
-name: handoff-prepare
+name: prepare
 description: Use when the context window is getting large and the user wants to continue in a fresh session. Captures everything done this session (changes, decisions, caveats, next steps) into a self-contained handoff file, then tells the user to start a fresh session and run handoff-continue. Triggers on "handoff", "prepare handoff", "continue in a new session", "context is too big", "compact and continue".
 ---
 
@@ -7,14 +7,14 @@ description: Use when the context window is getting large and the user wants to 
 
 Capture the current session into a handoff file a fresh session can resume from.
 
-This skill only **writes** the file. Resuming is separate: the user starts a fresh session (/clear), then runs /handoff-continue. Never claim the context was cleared — only the user can do that.
+This skill only **writes** the file. Resuming is separate: the user starts a fresh session (/clear), then runs /handoff:continue. Never claim the context was cleared — only the user can do that.
 
 ## Workflow
 
 1. **Gather from the conversation, not just the disk**: goal, what was done and why, dead ends, what broke, what's open.
 2. **Git state** — only if a git repo: `git status --short` and `git log --oneline -5` (single commands, no pipes). Otherwise skip.
 3. **Write the file** to `.claude/tmp/handoff/{timestamp}-{slug}.md` in the format below.
-   - `mkdir -p .claude/tmp/handoff/` first. Timestamp: `date +%Y%m%d-%H%M%S`. Slug: 2-4 distinctive kebab-case words (/handoff-continue matches on it).
+   - `mkdir -p .claude/tmp/handoff/` first. Timestamp: `date +%Y%m%d-%H%M%S`. Slug: 2-4 distinctive kebab-case words (/handoff:continue matches on it).
    - Project-local dir, not system temp — the path must survive the reset.
 4. **End your reply with the closing block** below.
 
@@ -74,9 +74,9 @@ Handoff written: .claude/tmp/handoff/{timestamp}-{slug}.md
 
 To continue in a fresh session:
   1. Start a fresh session (/clear)
-  2. Run /handoff-continue   (loads the newest handoff automatically)
+  2. Run /handoff:continue   (loads the newest handoff automatically)
 
-Or target this one explicitly: /handoff-continue {slug}
+Or target this one explicitly: /handoff:continue {slug}
 ```
 
 ## Common mistakes
@@ -84,4 +84,4 @@ Or target this one explicitly: /handoff-continue {slug}
 - Padding the file with prose → the next session pays for every token. Telegraphic, always.
 - Summarizing only file changes → next session redoes abandoned approaches. Capture the why and the dead ends.
 - Claiming context is cleared → you can't; only the user can.
-- Vague slug → `/handoff-continue <name>` can't find it.
+- Vague slug → `/handoff:continue <name>` can't find it.

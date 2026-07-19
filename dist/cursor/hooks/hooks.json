@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "preCompact": [
+      {
+        "command": "node .cursor/hooks/context-nudge.mjs",
+        "timeout": 5
+      }
+    ]
+  }
+}

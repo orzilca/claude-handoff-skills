@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "HANDOFF_PREPARE_CMD=/handoff:prepare HANDOFF_CONTINUE_CMD=/handoff:continue node \"${CLAUDE_PLUGIN_ROOT}/hooks/context-nudge.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
