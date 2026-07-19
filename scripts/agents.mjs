@@ -15,6 +15,22 @@ export const AGENTS = [
       `---\nname: ${name}\ndescription: ${description}\n---\n\n${body}\n`,
   },
   {
+    // Claude Code plugin packaging: skills are namespaced /handoff:<name>
+    id: 'claude-plugin',
+    tokens: {
+      ...common('.claude/tmp/handoff/', '$ARGUMENTS', '/clear'),
+      PREPARE_CMD: '/handoff:prepare',
+      CONTINUE_CMD: '/handoff:continue',
+    },
+    shortName: (name) => name.replace(/^handoff-/, ''),
+    outPath(name) {
+      return `skills/${this.shortName(name)}/SKILL.md`;
+    },
+    wrap({ name, description, body }) {
+      return `---\nname: ${this.shortName(name)}\ndescription: ${description}\n---\n\n${body}\n`;
+    },
+  },
+  {
     id: 'codex',
     tokens: common('.codex/handoff/', '$ARGUMENTS', '/new'),
     outPath: (name) => `${name}.md`,

@@ -6,6 +6,6 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/generate.mjs",
-    "test": "node scripts/generate.mjs && node scripts/check.mjs"
+    "test": "node scripts/generate.mjs && node scripts/check.mjs && node --test test/"
   }
 }

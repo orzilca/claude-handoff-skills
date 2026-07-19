@@ -23,7 +23,7 @@ Find the newest file with a single command, e.g. `ls -t .claude/tmp/handoff/*.md
 
 1. **Read the resolved file fully** with the file-reading tool.
 2. **Confirm which handoff loaded** — one line, e.g. `Resuming handoff: .claude/tmp/handoff/20260701-143022-parkalot-cron.md`.
-3. **Continue from its "Next steps"** section. Honor the caveats and open questions it records before acting.
+3. **Continue from its `next-steps` section** (older handoffs may title it "Next steps"). Honor the gotchas and open questions it records before acting.
 
 ## Common mistakes
 - Loading a handoff but ignoring its "Caveats" / "Open questions" → repeating a mistake the previous session already hit.
