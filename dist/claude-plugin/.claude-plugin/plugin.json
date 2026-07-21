@@ -1,6 +1,6 @@
 {
   "name": "handoff",
   "description": "Session handoff: capture state before context degrades, resume in a fresh session. Offers a handoff automatically when context crosses a token threshold; can auto-resume after a clear.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "license": "MIT"
 }
