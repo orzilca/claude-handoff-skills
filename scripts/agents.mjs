@@ -1,9 +1,11 @@
-const common = (dir, args, fresh) => ({
-  HANDOFF_DIR: dir,
+const common = (legacyDir, args, fresh) => ({
+  HANDOFF_DIR: '.handoff/',
+  LEGACY_HANDOFF_DIR: legacyDir,
   ARGS: args,
   FRESH_SESSION: fresh,
   PREPARE_CMD: '/handoff-prepare',
   CONTINUE_CMD: '/handoff-continue',
+  PREPC_CMD: '/handoff-prep-continue',
 });
 
 export const AGENTS = [
@@ -21,6 +23,7 @@ export const AGENTS = [
       ...common('.claude/tmp/handoff/', '$ARGUMENTS', '/clear'),
       PREPARE_CMD: '/handoff:prepare',
       CONTINUE_CMD: '/handoff:continue',
+      PREPC_CMD: '/handoff:prep-continue',
     },
     shortName: (name) => name.replace(/^handoff-/, ''),
     outPath(name) {
@@ -33,18 +36,21 @@ export const AGENTS = [
   {
     id: 'codex',
     tokens: common('.codex/handoff/', '$ARGUMENTS', '/new'),
+    aliases: { 'handoff-prepare': ['handoff-prep'] },
     outPath: (name) => `${name}.md`,
     wrap: ({ body }) => `${body}\n`,
   },
   {
     id: 'cursor',
     tokens: common('.cursor/handoff/', 'the name or path you passed', 'a new chat'),
+    aliases: { 'handoff-prepare': ['handoff-prep'] },
     outPath: (name) => `${name}.md`,
     wrap: ({ body }) => `${body}\n`,
   },
   {
     id: 'gemini',
     tokens: common('.gemini/handoff/', '{{args}}', '/clear'),
+    aliases: { 'handoff-prepare': ['handoff-prep'] },
     outPath: (name) => `${name}.toml`,
     wrap: ({ description, body }) =>
       `description = ${JSON.stringify(description)}\nprompt = '''\n${body}\n'''\n`,

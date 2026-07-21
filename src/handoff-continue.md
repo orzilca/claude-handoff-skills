@@ -14,10 +14,10 @@ This skill only **loads and resumes**. It does not write handoffs (that is {{PRE
 The skill may be invoked with an optional argument ({{ARGS}}).
 
 1. **Argument that looks like a path** (contains `/`, or exists as a file) → use it directly as the handoff path.
-2. **Argument that is a bare name** → substring-match it (case-insensitive) against filenames in `{{HANDOFF_DIR}}`. If multiple match, pick the **newest** by modification time. If none match, tell the user, list what *is* in the dir, and stop.
-3. **No argument** → load the **newest** file in `{{HANDOFF_DIR}}` by modification time. If the dir is missing or empty, tell the user there's no handoff to resume and stop.
+2. **Argument that is a bare name** → substring-match it (case-insensitive) against filenames in `{{HANDOFF_DIR}}`, falling back to the legacy dir `{{LEGACY_HANDOFF_DIR}}` (pre-v1.2 handoffs). If multiple match, pick the **newest** by modification time. If none match, tell the user, list what *is* in the dirs, and stop.
+3. **No argument** → load the **newest** file in `{{HANDOFF_DIR}}` by modification time; if that dir is missing or empty, try `{{LEGACY_HANDOFF_DIR}}`. If both are empty, tell the user there's no handoff to resume and stop.
 
-Find the newest file with a single command, e.g. `ls -t {{HANDOFF_DIR}}*.md`.
+Handoffs from other agents live in the same `{{HANDOFF_DIR}}` — resuming work prepared by a different CLI is normal. Find the newest file with a single command, e.g. `ls -t {{HANDOFF_DIR}}*.md` (then `ls -t {{LEGACY_HANDOFF_DIR}}*.md` if needed).
 
 ## Then
 

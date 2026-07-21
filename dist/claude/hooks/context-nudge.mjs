@@ -12,6 +12,7 @@ const STATE_DIR = process.env.HANDOFF_NUDGE_STATE_DIR || join(tmpdir(), 'handoff
 const TAIL_BYTES = 8 * 1024 * 1024;
 const PREPARE_CMD = process.env.HANDOFF_PREPARE_CMD || 'handoff-prepare';
 const CONTINUE_CMD = process.env.HANDOFF_CONTINUE_CMD || 'handoff-continue';
+const PREPC_CMD = process.env.HANDOFF_PREPC_CMD || 'handoff-prep-continue';
 
 function contextTokens(path) {
   const fd = openSync(path, 'r');
@@ -55,7 +56,8 @@ try {
           additionalContext:
             `[handoff-skills] Context is ~${k(tokens)} tokens (threshold ${k(THRESHOLD)}). ` +
             'Long contexts degrade output quality. Before handling this prompt, use the AskUserQuestion tool to offer a session handoff. ' +
-            `Options: "Handoff now" — run the ${PREPARE_CMD} skill, then the user starts a fresh session and runs ${CONTINUE_CMD}; ` +
+            `Options: "Handoff, continue here" — run the ${PREPC_CMD} skill (writes the handoff and arms auto-resume; after the user clears, the next session picks it up automatically); ` +
+            `"Handoff, resume elsewhere" — run the ${PREPARE_CMD} skill (portable; any agent's ${CONTINUE_CMD} can load it); ` +
             '"Keep going" — continue this session as-is. ' +
             'If the user declines, respect that and do not ask again this session.',
         },

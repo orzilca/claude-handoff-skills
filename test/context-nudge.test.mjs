@@ -47,6 +47,9 @@ test('above threshold → emits additionalContext', () => {
   assert.equal(out.hookEventName, 'UserPromptSubmit');
   assert.match(out.additionalContext, /AskUserQuestion/);
   assert.match(out.additionalContext, /~2k tokens/);
+  assert.match(out.additionalContext, /Handoff, continue here/);
+  assert.match(out.additionalContext, /handoff-prep-continue/);
+  assert.match(out.additionalContext, /Handoff, resume elsewhere/);
 });
 
 test('cache tokens count toward total', () => {
