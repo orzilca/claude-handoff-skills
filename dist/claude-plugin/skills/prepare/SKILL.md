@@ -13,8 +13,8 @@ This skill only **writes** the file. Resuming is separate: the user starts a fre
 
 1. **Gather from the conversation, not just the disk**: goal, what was done and why, dead ends, what broke, what's open.
 2. **Git state** — only if a git repo: `git status --short` and `git log --oneline -5` (single commands, no pipes). Otherwise skip.
-3. **Write the file** to `.claude/tmp/handoff/{timestamp}-{slug}.md` in the format below.
-   - `mkdir -p .claude/tmp/handoff/` first. Timestamp: `date +%Y%m%d-%H%M%S`. Slug: 2-4 distinctive kebab-case words (/handoff:continue matches on it).
+3. **Write the file** to `.handoff/{timestamp}-{slug}.md` in the format below.
+   - `mkdir -p .handoff/` first. Timestamp: `date +%Y%m%d-%H%M%S`. Slug: 2-4 distinctive kebab-case words (/handoff:continue matches on it).
    - Project-local dir, not system temp — the path must survive the reset.
 4. **End your reply with the closing block** below.
 
@@ -70,7 +70,7 @@ goal: {1-2 sentences}
 After writing the file, end your reply with exactly this, filled in:
 
 ```
-Handoff written: .claude/tmp/handoff/{timestamp}-{slug}.md
+Handoff written: .handoff/{timestamp}-{slug}.md
 
 To continue in a fresh session:
   1. Start a fresh session (/clear)

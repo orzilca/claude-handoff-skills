@@ -4,8 +4,9 @@
 
 Works across coding agents: **Claude Code, Codex CLI, Cursor, Gemini CLI, and Grok Build.**
 
-- **`handoff-prepare`** — captures the current session (goal, changes, decisions, gotchas, next steps) into a lean, machine-readable file under a project-local handoff dir.
+- **`handoff-prepare`** (alias `handoff-prep`) — captures the current session (goal, changes, decisions, gotchas, next steps) into a lean, machine-readable file under the shared `.handoff/` dir.
 - **`handoff-continue`** — loads a handoff file in a fresh session and resumes from its `next-steps`.
+- **`handoff-prep-continue`** (alias `handoff-prepc`, Claude Code) — prepare **+** auto-resume: after you `/clear`, the next session loads the handoff by itself.
 - **Auto context detection** *(optional, Claude Code + Cursor)* — a hook watches context size and offers a handoff before quality degrades. You still decide; nothing runs automatically.
 
 ```
@@ -14,9 +15,11 @@ Works across coding agents: **Claude Code, Codex CLI, Cursor, Gemini CLI, and Gr
 /handoff-continue       # the fresh session picks up right where you left off
 ```
 
+All agents share one project-local **`.handoff/`** dir — prepare in one CLI, continue in another (Claude Code → Codex, Cursor → Claude Code, any direction).
+
 👉 **[See what a handoff file looks like →](examples/sample-handoff.md)**
 
-Capture and resume are **separate, explicit commands** — the optional hook only *suggests* a handoff, it never resets or resumes anything on its own. You stay in control.
+Capture and resume are **separate, explicit commands** — the hooks only *suggest* a handoff or resume one you explicitly armed; the session reset itself is always yours. You stay in control.
 
 ## Why
 
@@ -42,19 +45,24 @@ npm test         # regenerate dist/, verify outputs, run hook unit tests
 /plugin install handoff@agent-handoff-skills
 ```
 
-Commands are namespaced: `/handoff:prepare` and `/handoff:continue`. The plugin also registers a `UserPromptSubmit` hook that measures context from the session transcript and — once it crosses **150k tokens** (configurable, see below) — has Claude ask whether you want to hand off now.
+Commands are namespaced: `/handoff:prepare`, `/handoff:continue`, `/handoff:prep-continue` — with short aliases `/handoff:prep` and `/handoff:prepc`. The plugin registers two hooks:
+
+- `UserPromptSubmit` — measures context from the session transcript; once it crosses **150k tokens** (configurable, see below) Claude asks whether to hand off now: *continue here* (auto-resume), *resume elsewhere*, or *keep going*.
+- `SessionStart` — if `/handoff:prep-continue` armed auto-resume, the next fresh session in the project loads the handoff automatically (marker is consumed once and expires after 15 min; `HANDOFF_RESUME_TTL_SECONDS` to tune).
 
 ### Claude Code — manual (skills only)
 
 ```sh
-cp -R dist/claude/handoff-prepare  ~/.claude/skills/
-cp -R dist/claude/handoff-continue ~/.claude/skills/
+cp -R dist/claude/handoff-prepare       ~/.claude/skills/
+cp -R dist/claude/handoff-continue      ~/.claude/skills/
+cp -R dist/claude/handoff-prep-continue ~/.claude/skills/
+mkdir -p ~/.claude/commands && cp dist/claude/commands/*.md ~/.claude/commands/   # /handoff-prep, /handoff-prepc aliases
 ```
 
-Optional auto-detection without the plugin: copy the hook script and register it in `~/.claude/settings.json`:
+Optional auto-detection + auto-resume without the plugin: copy the hook scripts and register them in `~/.claude/settings.json`:
 
 ```sh
-mkdir -p ~/.claude/hooks && cp dist/claude/hooks/context-nudge.mjs ~/.claude/hooks/
+mkdir -p ~/.claude/hooks && cp dist/claude/hooks/*.mjs ~/.claude/hooks/
 ```
 
 ```json
@@ -62,6 +70,9 @@ mkdir -p ~/.claude/hooks && cp dist/claude/hooks/context-nudge.mjs ~/.claude/hoo
   "hooks": {
     "UserPromptSubmit": [
       { "hooks": [{ "type": "command", "command": "node \"$HOME/.claude/hooks/context-nudge.mjs\"", "timeout": 10 }] }
+    ],
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "node \"$HOME/.claude/hooks/session-start-resume.mjs\"", "timeout": 10 }] }
     ]
   }
 }
@@ -88,8 +99,7 @@ Cursor only exposes context stats to its `preCompact` hook, so the nudge appears
 ### Codex CLI
 
 ```sh
-cp dist/codex/handoff-prepare.md  ~/.codex/prompts/
-cp dist/codex/handoff-continue.md ~/.codex/prompts/
+cp dist/codex/*.md ~/.codex/prompts/
 ```
 
 ### Gemini CLI
@@ -127,7 +137,7 @@ Fail-safe by design: if the transcript format changes or anything errors, the ho
 
 ```
 # When context is getting large (or when the nudge asks):
-/handoff-prepare          # plugin: /handoff:prepare
+/handoff-prepare          # or /handoff-prep · plugin: /handoff:prep
 
 # Then start a fresh session (Claude: /clear · Gemini: /clear · Codex: /new · Cursor: new chat).
 
@@ -137,7 +147,14 @@ Fail-safe by design: if the transcript format changes or anything errors, the ho
 /handoff-continue path/to/handoff.md   # or by explicit path
 ```
 
-Each agent writes handoffs under its own project-local dir (`.claude/tmp/handoff/`, `.codex/handoff/`, `.cursor/handoff/`, `.gemini/handoff/`), so they're scoped to the project and survive a session reset.
+Continuing in the **same** Claude Code session flow? Skip the second command entirely:
+
+```
+/handoff-prepc            # prepare + arm auto-resume (plugin: /handoff:prepc)
+/clear                    # the fresh session loads the handoff on its own
+```
+
+All handoffs land in the project-local **`.handoff/`** dir, shared by every agent — so "prepare in Claude Code, continue in Codex" is just running the continue command there. (Handoffs written by v1.1 and earlier live in the old per-agent dirs; `handoff-continue` still finds those.) Add `.handoff/` to your `.gitignore` unless you want handoffs in the repo.
 
 ## License
 
